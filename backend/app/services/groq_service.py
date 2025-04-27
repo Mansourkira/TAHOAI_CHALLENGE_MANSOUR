@@ -32,6 +32,10 @@ class GroqService:
             logger.error("GROQ_API_KEY environment variable is not set")
             raise ValueError("GROQ_API_KEY environment variable is not set")
         
+        # Log masked API key for debugging
+        masked_key = f"{self.api_key[:6]}...{self.api_key[-4:]}" if len(self.api_key) > 10 else "***masked***"
+        logger.info(f"Using GROQ API key: {masked_key}")
+        
         self.base_url = "https://api.groq.com/openai/v1/chat/completions"
         self.model = settings.GROQ_MODEL
         self.timeout = settings.GROQ_TIMEOUT_SECONDS
