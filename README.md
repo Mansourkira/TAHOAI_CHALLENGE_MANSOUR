@@ -2,7 +2,7 @@
 
 A full-stack AI chat application with a Next.js frontend and FastAPI backend using GROQ API for LLM chat completions.
 
-![Taho AI System Architecture](public/taho-ai-architecture.png)
+![Taho AI System Architecture](frontend/public/taho-ai-architecture.png)
 
 ## Project Structure
 
