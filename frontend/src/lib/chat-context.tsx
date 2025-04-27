@@ -199,27 +199,29 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         // Check if this is the first message in the conversation and update the title if it is
         const shouldUpdateTitle = messages.length === 0;
 
-        // Introduce a small delay before starting AI response to make the loading state visible
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Make sure WebSocket is connected
+        if (webSocketRef.current && connectionStatus !== "open") {
+          console.log("WebSocket not connected, attempting to reconnect");
+          webSocketRef.current.connect();
+          // Wait briefly for connection to establish
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
 
-        // Use RESTful API instead of WebSocket for direct response
-        const response = await apiClient.sendChatMessage(
-          content,
-          activeConversationId
-        );
-        console.log("Chat response:", response);
+        // Send message through WebSocket
+        if (webSocketRef.current) {
+          console.log(
+            `Sending message through WebSocket: "${content.substring(
+              0,
+              20
+            )}..." for conversation ${activeConversationId}`
+          );
+          currentResponse.current = ""; // Reset current response
+          streamingMessageId.current = null; // Reset streaming message ID
 
-        // Add AI response to messages
-        if (response && response.ai_response) {
-          const aiMessage: ChatMessage = {
-            id: uuidv4(),
-            role: "assistant",
-            content: response.ai_response.content,
-            conversationId: activeConversationId,
-            timestamp: new Date(response.ai_response.created_at),
-          };
-
-          setMessages((prev) => [...prev, aiMessage]);
+          webSocketRef.current.sendMessage(content, activeConversationId);
+        } else {
+          console.error("WebSocket not available");
+          setIsLoading(false);
         }
 
         // Update conversation title if this was the first message
@@ -241,48 +243,44 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
             console.error("Error updating conversation title:", error);
           }
         }
-
-        // Add a slight delay before finishing loading to allow for animations
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        setIsLoading(false);
       } catch (error) {
         console.error("Error sending message:", error);
         setIsLoading(false);
       }
     },
-    [conversationId, ensureConversation, messages.length]
+    [connectionStatus, conversationId, ensureConversation, messages.length]
   );
 
-  // Load an existing conversation from the API
+  // Clear the current conversation
+  const clearMessages = useCallback(async () => {
+    setMessages([]);
+    setConversationId(null);
+  }, []);
+
+  // Load an existing conversation
   const loadConversation = useCallback(async (id: number) => {
     try {
       setIsLoading(true);
       const conversation = await apiClient.getConversation(id);
+      console.log("Loaded conversation:", conversation);
+
       setConversationId(conversation.id);
-
-      // Convert API messages to ChatMessages
-      const chatMessages: ChatMessage[] = conversation.messages.map((msg) => ({
-        id: uuidv4(), // Generate client-side ID
-        role: msg.role as "user" | "assistant",
-        content: msg.content,
-        conversationId: msg.conversation_id,
-        timestamp: new Date(msg.created_at),
-      }));
-
-      setMessages(chatMessages);
+      // Convert messages to the internal format
+      const formattedMessages: ChatMessage[] = conversation.messages.map(
+        (msg) => ({
+          id: `${msg.id}`,
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          conversationId: conversation.id,
+          timestamp: new Date(msg.created_at),
+        })
+      );
+      setMessages(formattedMessages);
       setIsLoading(false);
     } catch (error) {
-      console.error(`Error loading conversation ${id}:`, error);
+      console.error("Error loading conversation:", error);
       setIsLoading(false);
     }
-  }, []);
-
-  // Clear all messages
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-    setConversationId(null);
-    currentResponse.current = "";
-    streamingMessageId.current = null;
   }, []);
 
   return (
