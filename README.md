@@ -125,58 +125,6 @@ The application follows a modern architecture with the following components:
    - Powers the AI chat functionality
    - Provides LLM responses via API
 
-## Deployment
-
-### Deploying the Frontend to Vercel
-
-The Next.js frontend is optimized for deployment on Vercel:
-
-1. Create a Vercel account if you don't have one at [vercel.com](https://vercel.com)
-2. Install the Vercel CLI:
-   ```bash
-   npm install -g vercel
-   ```
-3. From the `frontend` directory, run:
-   ```bash
-   vercel
-   ```
-4. Follow the prompts to link your project and deploy
-5. Set the following environment variables in the Vercel project settings:
-   - `NEXT_PUBLIC_WEBSOCKET_URL`: Your deployed backend WebSocket URL
-   - `NEXT_PUBLIC_API_URL`: Your deployed backend API URL
-
-### Deploying the Backend
-
-For the backend, you have several options:
-
-1. **Railway**:
-
-   - Push your code to GitHub
-   - Create a new project in Railway from your GitHub repo
-   - Set the required environment variables:
-     - `GROQ_API_KEY`: Your GROQ API key (required)
-     - `GROQ_MODEL`: LLM model to use (optional)
-     - `HOST`, `PORT`, `CORS_ORIGINS`, `DATABASE_URL` (optional)
-
-2. **Render**:
-
-   - Create a new Web Service in Render
-   - Connect your GitHub repository
-   - Set the build command to `pip install -r requirements.txt`
-   - Set the start command to `python start.py`
-   - Add the required environment variables in the Render dashboard:
-     - `GROQ_API_KEY`: Your GROQ API key (required)
-     - Additional optional variables as needed
-
-3. **Heroku**:
-   - Create a `Procfile` with `web: uvicorn main:app --host=0.0.0.0 --port=${PORT}`
-   - Deploy using the Heroku CLI or GitHub integration
-   - Configure environment variables in the Heroku dashboard:
-     - `GROQ_API_KEY`: Your GROQ API key (required)
-     - Other settings as needed
-
-Remember to update the `CORS_ORIGINS` setting in your deployment to allow requests from your Vercel frontend domain.
-
 ## API Documentation
 
 Once the backend server is running, you can access the API documentation at:
@@ -209,20 +157,5 @@ ws.onopen = () => {
       conversation_id: 1, // Optional, omit to create a new conversation
     })
   );
-};
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-
-  if (data.status === "streaming") {
-    // Append the streaming text to the UI
-    console.log("Received chunk:", data.text);
-  } else if (data.status === "complete") {
-    // Stream complete, update UI accordingly
-    console.log("Stream complete");
-  } else if (data.status === "error") {
-    // Handle error
-    console.error("Error:", data.error);
-  }
 };
 ```
