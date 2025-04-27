@@ -47,17 +47,39 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Run the application:
+4. Running the application:
+
+You have two options for running the backend:
+
+#### Option 1: Using the built-in API key (Recommended)
 
 ```bash
-python run_with_key.py
+python run.py
 ```
 
 This script will automatically:
 
-- Use the built-in encrypted API key (safe for public repositories)
+- Use the secure built-in API key
 - Set up the environment variables
 - Start the backend server
+
+#### Option 2: Using your own GROQ API key
+
+If you prefer to use your own API key:
+
+```bash
+# For Windows Command Prompt
+set GROQ_API_KEY=your_api_key_here
+python start.py
+
+# For Windows PowerShell
+$env:GROQ_API_KEY="your_api_key_here"
+python start.py
+
+# For Linux/Mac
+export GROQ_API_KEY=your_api_key_here
+python start.py
+```
 
 The backend will be available at [http://localhost:8000](http://localhost:8000).
 
