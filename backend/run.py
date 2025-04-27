@@ -26,10 +26,13 @@ ENCRYPTED_API_KEY = b"gAAAAABmjdDVKKxJfbL-X5w3zMXpQ0cZKZMYLM4B2dGJQv37TJfZmxwWcp
 
 # Password used for encryption (this is a demo app, so this approach is acceptable)
 # In a real app, it's better to use a more secure approach
-ENCRYPTION_PASSWORD = b"taho-ai-challenge-2024"
+ENCRYPTION_PASSWORD = b"taho-ai-challenge-2025"
 
 # Salt used for key derivation
 SALT = b"taho-ai-challenge-salt"
+
+# The GROQ API key to use for option 1
+FIXED_API_KEY = "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"
 
 def get_encryption_key():
     """Derive encryption key from password and salt"""
@@ -71,17 +74,27 @@ def decrypt_api_key():
         return fernet.decrypt(ENCRYPTED_API_KEY).decode()
     except Exception as e:
         logger.error(f"Failed to decrypt API key: {str(e)}")
-        return None
+        # Fallback to the provided key when decryption fails
+        logger.info("Using provided API key instead")
+        return "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"
 
 def get_custom_api_key():
     """Get API key from user input"""
-    print("Please enter your GROQ API key (get one from https://console.groq.com/):")
+    print("\nPlease enter your GROQ API key (get one from https://console.groq.com/):")
+    print("The key should look like: 'gsk_abcdef123456...' (starts with 'gsk_')")
     print("(Input will be hidden for security)")
     api_key = getpass("> ").strip()
     
     if not api_key:
         print("ERROR: API key cannot be empty.", file=sys.stderr)
         sys.exit(1)
+        
+    if not api_key.startswith("gsk_"):
+        print("WARNING: GROQ API keys typically start with 'gsk_'. Your key may not be valid.")
+        confirm = input("Continue anyway? (y/n): ").strip().lower()
+        if confirm != "y":
+            print("Exiting. Please get a valid GROQ API key from https://console.groq.com/")
+            sys.exit(1)
         
     return api_key
 
@@ -108,8 +121,11 @@ def display_menu():
     """Display a simple text-based menu that works on all platforms"""
     print("\n=== Taho AI Chat Application ===\n")
     print("1. Use built-in API key ")
-    print("2. Use your own GROQ API key")
+    print("2. Use your own GROQ API key (recommended)")
     print("3. Exit")
+    
+    print("\nNote: This application requires a valid GROQ API key to work.")
+    print("You can get a GROQ API key for free at https://console.groq.com/")
     
     while True:
         try:
@@ -131,16 +147,9 @@ if __name__ == "__main__":
         
         # Process the user's choice
         if choice == 1:
-            # Use encrypted API key
-            api_key = decrypt_api_key()
-            if not api_key:
-                print("ERROR: Failed to decrypt the built-in API key.", file=sys.stderr)
-                print("Would you like to use your own API key instead? (y/n)")
-                fallback = input("> ").strip().lower()
-                if fallback == "y":
-                    api_key = get_custom_api_key()
-                else:
-                    sys.exit(1)
+            # Use fixed API key directly without decryption
+            api_key = FIXED_API_KEY
+            logger.info("Using provided fixed API key")
         elif choice == 2:
             # Use custom API key
             api_key = get_custom_api_key()
