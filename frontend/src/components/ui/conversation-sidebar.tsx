@@ -494,7 +494,7 @@ export function ConversationSidebar({
               <div className="w-8 h-8 rounded-full bg-neutral-300 dark:bg-neutral-700 flex items-center justify-center">
                 {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
               </div>
-              <span className="text-sm font-medium">Taho AI Demo</span>
+              <span className="text-sm font-medium">Taho AI Chat</span>
             </div>
             {userDropdownOpen ? (
               <ChevronUp size={16} />
