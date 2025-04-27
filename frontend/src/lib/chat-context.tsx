@@ -22,6 +22,7 @@ type ChatContextType = {
   sendMessage: (content: string) => void;
   isLoading: boolean;
   conversationId: number | null;
+  setConversationId: (id: number | null) => void;
   clearMessages: () => void;
   connectionStatus: WebSocketState;
   loadConversation: (id: number) => Promise<void>;
@@ -90,6 +91,17 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 
       if (response.status === "error") {
         console.error("WebSocket error:", response.error);
+        // Show error in UI by adding it as a system message
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: uuidv4(),
+            role: "assistant",
+            content: `Error: ${response.error || "Unknown error occurred"}`,
+            conversationId: response.conversation_id,
+            timestamp: new Date(),
+          },
+        ]);
         setIsLoading(false);
         return;
       }
@@ -100,48 +112,50 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         setConversationId(response.conversation_id);
       }
 
-      if (response.status === "streaming" && response.text) {
-        console.log(
-          `Received streaming text chunk: "${response.text.substring(
-            0,
-            20
-          )}..."`
-        );
-        currentResponse.current += response.text;
+      if (response.status === "streaming") {
+        if (response.text !== undefined) {
+          console.log(
+            `Received streaming text chunk: "${response.text.substring(
+              0,
+              20
+            )}..."`
+          );
+          currentResponse.current += response.text;
 
-        // Create a new streaming message or update the existing one
-        setMessages((prevMessages) => {
-          // If we already have a streaming message, update it
-          if (streamingMessageId.current) {
-            console.log(
-              `Updating existing streaming message ${streamingMessageId.current}`
-            );
-            return prevMessages.map((msg) => {
-              if (msg.id === streamingMessageId.current) {
-                return { ...msg, content: currentResponse.current };
-              }
-              return msg;
-            });
-          }
-          // Otherwise create a new message
-          else {
-            const newMessageId = uuidv4();
-            console.log(
-              `Creating new streaming message with ID ${newMessageId}`
-            );
-            streamingMessageId.current = newMessageId;
-            return [
-              ...prevMessages,
-              {
-                id: newMessageId,
-                role: "assistant",
-                content: currentResponse.current,
-                conversationId: response.conversation_id,
-                timestamp: new Date(),
-              },
-            ];
-          }
-        });
+          // Create a new streaming message or update the existing one
+          setMessages((prevMessages) => {
+            // If we already have a streaming message, update it
+            if (streamingMessageId.current) {
+              console.log(
+                `Updating existing streaming message ${streamingMessageId.current}`
+              );
+              return prevMessages.map((msg) => {
+                if (msg.id === streamingMessageId.current) {
+                  return { ...msg, content: currentResponse.current };
+                }
+                return msg;
+              });
+            }
+            // Otherwise create a new message
+            else {
+              const newMessageId = uuidv4();
+              console.log(
+                `Creating new streaming message with ID ${newMessageId}`
+              );
+              streamingMessageId.current = newMessageId;
+              return [
+                ...prevMessages,
+                {
+                  id: newMessageId,
+                  role: "assistant",
+                  content: currentResponse.current,
+                  conversationId: response.conversation_id,
+                  timestamp: new Date(),
+                },
+              ];
+            }
+          });
+        }
       }
       // Handle stream completion
       else if (response.status === "complete") {
@@ -252,9 +266,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   );
 
   // Clear the current conversation
-  const clearMessages = useCallback(async () => {
+  const clearMessages = useCallback(() => {
+    // Reset all conversation-related state
     setMessages([]);
     setConversationId(null);
+    currentResponse.current = "";
+    streamingMessageId.current = null;
   }, []);
 
   // Load an existing conversation
@@ -290,6 +307,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         sendMessage,
         isLoading,
         conversationId,
+        setConversationId,
         clearMessages,
         connectionStatus,
         loadConversation,
