@@ -4,26 +4,6 @@ A full-stack AI chat application with a Next.js frontend and FastAPI backend usi
 
 ![Taho AI System Architecture](public/taho-ai-architecture.png)
 
-## 📋 For Recruiters
-
-This project demonstrates my full-stack development capabilities, with emphasis on:
-
-- **Modern Frontend Development**: Next.js, React, TypeScript, and Tailwind CSS
-- **Backend API Development**: FastAPI, SQLAlchemy, and WebSockets
-- **AI Integration**: Integration with GROQ API for LLM-powered chat
-- **Real-time Communication**: WebSocket implementation for streaming responses
-- **Database Design**: SQLite with SQLAlchemy for data persistence
-- **UI/UX Design**: Clean, responsive, and intuitive user interface with dark/light mode
-
-### Key Technical Features
-
-- **✨ Real-time Chat**: Live streaming of AI responses with typing animation
-- **🔄 Conversation Management**: Create, rename, delete, and list conversations
-- **🌓 Theme Toggle**: User-friendly dark/light mode support
-- **🎙️ Voice Input**: Browser-native speech recognition for voice-to-text
-- **📱 Responsive Design**: Fully responsive across mobile and desktop devices
-- **⚡ WebSocket Communication**: Efficient bidirectional communication
-
 ## Project Structure
 
 - `/frontend`: Next.js application for the user interface
@@ -136,6 +116,51 @@ The application follows a modern architecture with the following components:
 4. **External API (GROQ)**
    - Powers the AI chat functionality
    - Provides LLM responses via API
+
+## Deployment
+
+### Deploying the Frontend to Vercel
+
+The Next.js frontend is optimized for deployment on Vercel:
+
+1. Create a Vercel account if you don't have one at [vercel.com](https://vercel.com)
+2. Install the Vercel CLI:
+   ```bash
+   npm install -g vercel
+   ```
+3. From the `frontend` directory, run:
+   ```bash
+   vercel
+   ```
+4. Follow the prompts to link your project and deploy
+5. Set the following environment variables in the Vercel project settings:
+   - `NEXT_PUBLIC_WEBSOCKET_URL`: Your deployed backend WebSocket URL
+   - `NEXT_PUBLIC_API_URL`: Your deployed backend API URL
+
+### Deploying the Backend
+
+For the backend, you have several options:
+
+1. **Railway**:
+
+   - Push your code to GitHub
+   - Create a new project in Railway from your GitHub repo
+   - Set the required environment variables
+
+2. **Render**:
+
+   - Create a new Web Service in Render
+   - Connect your GitHub repository
+   - Set the build command to `pip install -r requirements.txt`
+   - Set the start command to `python start.py`
+   - Add the environment variables from the `.env` file
+
+3. **Heroku**:
+   - Create a `Procfile` with `web: uvicorn main:app --host=0.0.0.0 --port=${PORT}`
+   - Deploy using the Heroku CLI or GitHub integration
+   - Configure environment variables in the Heroku dashboard
+
+Remember to update the CORS settings in your backend to allow requests from your Vercel frontend domain.
 
 ## API Documentation
 
