@@ -297,7 +297,6 @@ export function ChatInterface() {
       };
 
       recognition.onerror = (event: SpeechRecognitionEvent) => {
-        console.error("Speech recognition error", event.error);
         showToast(`Error: ${event.error}`, "error");
         setIsListening(false);
       };
@@ -308,7 +307,6 @@ export function ChatInterface() {
 
       recognition.start();
     } catch (error) {
-      console.error("Error starting speech recognition:", error);
       showToast("Failed to start speech recognition.", "error");
       setIsListening(false);
     }
@@ -497,7 +495,6 @@ function MessageBubble({ message, isNew = false }: MessageBubbleProps) {
         setIsCopied(false);
       }, 2000);
     } catch (error) {
-      console.error("Failed to copy message:", error);
       showToast("Failed to copy message", "error");
     }
   };

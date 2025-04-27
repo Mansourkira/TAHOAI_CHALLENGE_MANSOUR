@@ -25,36 +25,39 @@ A full-stack AI chat application with a Next.js frontend and FastAPI backend usi
 cd backend
 ```
 
-2. Create a virtual environment:
+2. Create and activate a virtual environment (strongly recommended):
 
 ```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment:
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Your terminal prompt should change to indicate the virtual environment is active
 ```
 
-3. Install dependencies:
+3. Install dependencies within the virtual environment:
 
 ```bash
+# Make sure your virtual environment is activated (you should see "(venv)" in your terminal)
 pip install -r requirements.txt
 ```
 
-4. Run the application using the interactive script:
+4. Run the application:
 
 ```bash
-python run.py
+python run_with_key.py
 ```
 
-This will launch an interactive menu where you can:
+This script will automatically:
 
-- Navigate options using the UP/DOWN arrow keys
-- Select an option by pressing ENTER
-
-You'll be presented with two options:
-
-- Use the built-in encrypted API key (for demo/recruiters)
-- Enter your own GROQ API key
-
-The script will handle setting up the environment and starting the backend server.
+- Use the built-in encrypted API key (safe for public repositories)
+- Set up the environment variables
+- Start the backend server
 
 The backend will be available at [http://localhost:8000](http://localhost:8000).
 

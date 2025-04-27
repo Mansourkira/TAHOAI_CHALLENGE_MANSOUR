@@ -10,6 +10,7 @@ import {
   MessageSquarePlus,
   Moon,
   Pencil,
+  Search,
   Settings,
   Sun,
   Trash2,
@@ -33,8 +34,10 @@ export function ConversationSidebar({
   const [username, setUsername] = useState("Demo User"); // Default username
   const [editingConvoId, setEditingConvoId] = useState<number | null>(null);
   const [newTitle, setNewTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
   // Add theme state
   const [theme, setTheme] = useState<"dark" | "light" | "system">("system");
@@ -47,7 +50,7 @@ export function ConversationSidebar({
       const data = await apiClient.getConversations(20, 0);
       setConversations(data);
     } catch (error) {
-      console.error("Error loading conversations:", error);
+      // Remove console.error
     } finally {
       setIsLoading(false);
     }
@@ -137,7 +140,7 @@ export function ConversationSidebar({
       }
       showToast("Conversation deleted", "success");
     } catch (error) {
-      console.error(`Error deleting conversation ${id}:`, error);
+      // Remove console.error
       showToast("Error deleting conversation", "error");
     }
   };
@@ -179,7 +182,7 @@ export function ConversationSidebar({
         setCopiedConvoId(null);
       }, 2000);
     } catch (error) {
-      console.error(`Error copying conversation ${convo.id}:`, error);
+      // Remove console.error
       showToast("Error copying conversation", "error");
       setCopiedConvoId(null);
     }
@@ -219,7 +222,7 @@ export function ConversationSidebar({
       setEditingConvoId(null);
       showToast("Conversation renamed", "success");
     } catch (error) {
-      console.error(`Error updating conversation ${id} title:`, error);
+      // Remove console.error
       showToast("Error renaming conversation", "error");
     }
   };
@@ -238,6 +241,29 @@ export function ConversationSidebar({
       handleCancelEdit(e as unknown as React.MouseEvent);
     }
   };
+
+  // Handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Clear search input
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
+  // Filter conversations based on search query
+  const filteredConversations = conversations.filter((convo) => {
+    const searchLower = searchQuery.toLowerCase();
+    const titleMatch = convo.title.toLowerCase().includes(searchLower);
+    const contentMatch = convo.last_message?.content
+      .toLowerCase()
+      .includes(searchLower);
+    return titleMatch || contentMatch;
+  });
 
   // Get a display title for a conversation
   const getDisplayTitle = (convo: ConversationSummary) => {
@@ -318,18 +344,48 @@ export function ConversationSidebar({
         </button>
       </div>
 
+      {/* Search input */}
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search size={14} className="text-neutral-400" />
+          </div>
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search conversations..."
+            className="w-full py-2 pl-9 pr-8 text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+          />
+          {searchQuery && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              <X
+                size={14}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-2 relative">
         {isLoading ? (
           <div className="flex justify-center p-4 text-neutral-500">
             Loading...
           </div>
-        ) : conversations.length === 0 ? (
+        ) : filteredConversations.length === 0 ? (
           <div className="flex justify-center p-4 text-neutral-500">
-            No conversations yet
+            {conversations.length === 0
+              ? "No conversations yet"
+              : "No conversations matching search"}
           </div>
         ) : (
           <ul className="space-y-1">
-            {conversations.map((convo) => (
+            {filteredConversations.map((convo) => (
               <li
                 key={convo.id}
                 onClick={() => handleSelectConversation(convo.id)}
