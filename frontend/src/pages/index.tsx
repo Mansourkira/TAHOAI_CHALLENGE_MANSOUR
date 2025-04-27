@@ -100,9 +100,11 @@ export default function Home() {
               <DynamicConversationSidebar onConversationSelect={closeSidebar} />
             </div>
 
-            {/* Main chat area - make this scrollable instead of the whole page */}
-            <div className="flex-1 overflow-auto p-4 md:p-6 max-w-3xl mx-auto w-full">
-              <DynamicChatInterface />
+            {/* Main chat area - allow the chat interface to handle scrolling */}
+            <div className="flex-1 p-4 md:p-6 w-full flex items-start justify-center h-full overflow-hidden">
+              <div className="w-full max-w-2xl h-full flex flex-col">
+                <DynamicChatInterface />
+              </div>
             </div>
           </ChatProvider>
         </main>

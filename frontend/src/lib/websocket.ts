@@ -46,19 +46,67 @@ export class ChatWebSocket {
       this.socket.onopen = () => {
         this.reconnectAttempts = 0;
         this.updateState("open");
+        console.log("WebSocket connection established");
         this.processQueuedMessages();
       };
 
       this.socket.onmessage = (event) => {
         try {
+          console.log("Raw WebSocket message received:", event.data);
           const data = JSON.parse(event.data) as StreamResponse;
+
+          // Ensure all required fields are present
+          if (!data.conversation_id && data.conversation_id !== 0) {
+            console.warn(
+              "WebSocket message missing conversation_id, adding default value",
+              data
+            );
+            data.conversation_id = 0;
+          }
+
+          if (!data.status) {
+            console.warn(
+              "WebSocket message missing status, assuming error",
+              data
+            );
+            data.status = "error";
+            data.error = "Invalid response format from server (missing status)";
+          }
+
+          // Text field might be missing for complete/error status
+          if (data.status === "streaming" && !data.text && data.text !== "") {
+            console.warn(
+              "Streaming message missing text field, assuming empty text",
+              data
+            );
+            data.text = "";
+          }
+
+          console.log("Processed WebSocket message:", data);
           this.notifyMessageCallbacks(data);
         } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+          console.error(
+            "Error parsing WebSocket message:",
+            error,
+            "Raw data:",
+            event.data
+          );
+
+          // Try to notify callbacks with an error message
+          const errorResponse: StreamResponse = {
+            status: "error",
+            conversation_id: 0,
+            error: `Error parsing WebSocket message: ${error}`,
+          };
+
+          this.notifyMessageCallbacks(errorResponse);
         }
       };
 
-      this.socket.onclose = () => {
+      this.socket.onclose = (event) => {
+        console.log(
+          `WebSocket connection closed. Code: ${event.code}, Reason: ${event.reason}`
+        );
         this.updateState("closed");
         this.tryReconnect();
       };
@@ -83,9 +131,12 @@ export class ChatWebSocket {
         conversationId !== undefined && { conversation_id: conversationId }),
     });
 
+    console.log(`Sending message through WebSocket: ${payload}`);
+
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(payload);
     } else {
+      console.log("WebSocket not open, queuing message");
       this.messageQueue.push(payload);
       if (this.socket?.readyState !== WebSocket.CONNECTING) {
         this.connect();
@@ -141,9 +192,11 @@ export class ChatWebSocket {
 
   private processQueuedMessages(): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      console.log(`Processing ${this.messageQueue.length} queued messages`);
       while (this.messageQueue.length > 0) {
         const message = this.messageQueue.shift();
         if (message) {
+          console.log(`Sending queued message: ${message}`);
           this.socket.send(message);
         }
       }

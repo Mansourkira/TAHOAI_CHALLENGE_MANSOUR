@@ -1,35 +1,41 @@
-# Taho AI Challenge
+# Taho AI Challenge - Chat Application
 
-A full-stack AI chat application with a Next.js frontend and FastAPI backend using GROQ API for chat completions.
+A full-stack AI chat application with a Next.js frontend and FastAPI backend using GROQ API for LLM chat completions.
+
+![Taho AI System Architecture](public/taho-ai-architecture.png)
+
+## 📋 For Recruiters
+
+This project demonstrates my full-stack development capabilities, with emphasis on:
+
+- **Modern Frontend Development**: Next.js, React, TypeScript, and Tailwind CSS
+- **Backend API Development**: FastAPI, SQLAlchemy, and WebSockets
+- **AI Integration**: Integration with GROQ API for LLM-powered chat
+- **Real-time Communication**: WebSocket implementation for streaming responses
+- **Database Design**: SQLite with SQLAlchemy for data persistence
+- **UI/UX Design**: Clean, responsive, and intuitive user interface with dark/light mode
+
+### Key Technical Features
+
+- **✨ Real-time Chat**: Live streaming of AI responses with typing animation
+- **🔄 Conversation Management**: Create, rename, delete, and list conversations
+- **🌓 Theme Toggle**: User-friendly dark/light mode support
+- **🎙️ Voice Input**: Browser-native speech recognition for voice-to-text
+- **📱 Responsive Design**: Fully responsive across mobile and desktop devices
+- **⚡ WebSocket Communication**: Efficient bidirectional communication
 
 ## Project Structure
 
 - `/frontend`: Next.js application for the user interface
-- `/backend`: FastAPI application providing chat API endpoints
+- `/backend`: FastAPI application providing chat API endpoints and LLM integration
 
 ## Getting Started
 
-### Frontend Setup
+### Prerequisites
 
-1. Navigate to the frontend directory:
-
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Run the development server:
-
-```bash
-npm run dev
-```
-
-The frontend will be available at [http://localhost:3000](http://localhost:3000).
+- Node.js (v16+)
+- Python (v3.9+)
+- GROQ API key (get one from [GROQ.ai](https://console.groq.com/))
 
 ### Backend Setup
 
@@ -71,10 +77,65 @@ CORS_ORIGINS=http://localhost:3000
 5. Run the server:
 
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+python start.py
 ```
 
 The backend will be available at [http://localhost:8000](http://localhost:8000).
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env.local` file:
+
+```bash
+# API configuration
+NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8000/ws/chat
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+4. Run the development server:
+
+```bash
+npm run dev
+```
+
+The frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+## System Architecture
+
+The application follows a modern architecture with the following components:
+
+1. **Frontend (Next.js)**
+
+   - React components with TypeScript
+   - WebSocket client for real-time communication
+   - Tailwind CSS for styling
+
+2. **Backend (FastAPI)**
+
+   - RESTful API endpoints for conversation management
+   - WebSocket server for real-time chat
+   - Integration with GROQ API for LLM responses
+
+3. **Database (SQLite)**
+
+   - Stores conversation history and messages
+   - Async SQLAlchemy for database operations
+
+4. **External API (GROQ)**
+   - Powers the AI chat functionality
+   - Provides LLM responses via API
 
 ## API Documentation
 

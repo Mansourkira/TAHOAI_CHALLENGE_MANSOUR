@@ -227,3 +227,60 @@ body {
     opacity: 1;
   }
 }
+
+/* Input field animation when chat starts */
+@keyframes slideUp {
+  0% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-in-out forwards;
+  animation-delay: 0.2s;
+}
+
+/* More prominent scrollbar styling */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.7);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.7);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.9);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(75, 85, 99, 0.9);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.7) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(75, 85, 99, 0.7) transparent;
+}
