@@ -11,9 +11,9 @@ import {
   Moon,
   Pencil,
   Search,
-  Settings,
   Sun,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -233,6 +233,9 @@ export function ConversationSidebar({
     setEditingConvoId(null);
   };
 
+  const handleGithubProfile = () => {
+    window.open("https://github.com/Mansourkira", "_blank");
+  };
   // Handle key press in edit input
   const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
     if (e.key === "Enter") {
@@ -502,7 +505,6 @@ export function ConversationSidebar({
               <ChevronDown size={16} />
             )}
           </button>
-
           {userDropdownOpen && (
             <div className="absolute bottom-full left-0 mb-1 w-full bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden z-10">
               <div className="p-1">
@@ -523,11 +525,11 @@ export function ConversationSidebar({
                   )}
                 </button>
                 <button
-                  onClick={handleAbout}
+                  onClick={handleGithubProfile}
                   className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
                 >
-                  <Settings size={16} />
-                  <span>About</span>
+                  <User size={16} />
+                  <span>My Profile</span>
                 </button>
                 <button
                   onClick={handleGithub}

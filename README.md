@@ -172,3 +172,29 @@ ws.onopen = () => {
   );
 };
 ```
+
+## Database Utilities
+
+The backend directory includes database utility scripts to help view and manage the SQLite database:
+
+- `backend/view_database.py`: A utility script that shows database structure, tables, columns, and sample data.
+
+  - Lists all tables in the database
+  - Displays column structure for each table
+  - Shows sample data (up to 5 rows) from each table
+
+- `backend/view_data.py`: A detailed data viewer that focuses on conversation content:
+  - Displays conversation statistics (total conversations, messages)
+  - Shows message counts by role (user, assistant, system)
+  - Lists all conversations with creation dates and message counts
+  - Displays the full message history for each conversation with formatted timestamps
+
+### Running Database Utilities
+
+```bash
+cd backend
+python view_database.py  # To view database structure
+python view_data.py      # To view conversation data
+```
+
+These utilities are helpful for development, debugging, and understanding the application's data model.

@@ -87,10 +87,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   // Handle incoming WebSocket messages
   const handleWebSocketMessage = useCallback(
     (response: StreamResponse) => {
-      console.log("Received WebSocket response:", response);
-
       if (response.status === "error") {
-        console.error("WebSocket error:", response.error);
         // Show error in UI by adding it as a system message
         setMessages((prev) => [
           ...prev,
@@ -108,7 +105,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 
       // Set the conversation ID if we don't have one yet
       if (!conversationId && response.conversation_id) {
-        console.log(`Setting conversation ID to ${response.conversation_id}`);
         setConversationId(response.conversation_id);
       }
 
@@ -117,10 +113,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         const textChunk = response.text !== undefined ? response.text : "";
 
         if (textChunk || textChunk === "") {
-          console.log(
-            `Received streaming text chunk: "${textChunk.substring(0, 20)}..."`
-          );
-
           // Add the chunk to the current response
           currentResponse.current += textChunk;
 
@@ -128,9 +120,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
           setMessages((prevMessages) => {
             // If we already have a streaming message, update it
             if (streamingMessageId.current) {
-              console.log(
-                `Updating existing streaming message ${streamingMessageId.current}`
-              );
               return prevMessages.map((msg) => {
                 if (msg.id === streamingMessageId.current) {
                   return { ...msg, content: currentResponse.current };
@@ -141,13 +130,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
             // Otherwise create a new message
             else {
               const newMessageId = uuidv4();
-              console.log(
-                `Creating new streaming message with ID ${newMessageId}`,
-                `Initial content: "${currentResponse.current.substring(
-                  0,
-                  20
-                )}..."`
-              );
+
               streamingMessageId.current = newMessageId;
               return [
                 ...prevMessages,
@@ -165,13 +148,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       }
       // Handle stream completion
       else if (response.status === "complete") {
-        console.log("Stream completed");
-        console.log(
-          `Final response content: "${currentResponse.current.substring(
-            0,
-            50
-          )}..."`
-        );
         setIsLoading(false);
         // Reset streaming state
         streamingMessageId.current = null;
@@ -185,11 +161,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   const ensureConversation = useCallback(async () => {
     if (!conversationId) {
       try {
-        console.log("Creating a new conversation");
         const conversation = await apiClient.createConversation(
           "New conversation"
         );
-        console.log("Created conversation:", conversation);
         setConversationId(conversation.id);
         return conversation.id;
       } catch (error) {
@@ -227,7 +201,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 
         // Make sure WebSocket is connected
         if (webSocketRef.current && connectionStatus !== "open") {
-          console.log("WebSocket not connected, attempting to reconnect");
           webSocketRef.current.connect();
           // Wait briefly for connection to establish
           await new Promise((resolve) => setTimeout(resolve, 500));
@@ -235,12 +208,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 
         // Send message through WebSocket
         if (webSocketRef.current) {
-          console.log(
-            `Sending message through WebSocket: "${content.substring(
-              0,
-              20
-            )}..." for conversation ${activeConversationId}`
-          );
           currentResponse.current = ""; // Reset current response
           streamingMessageId.current = null; // Reset streaming message ID
 
@@ -260,7 +227,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
               newTitle = newTitle.substring(0, maxTitleLength) + "...";
             }
 
-            console.log(`Updating conversation title to: ${newTitle}`);
             await apiClient.updateConversationTitle(
               activeConversationId,
               newTitle
@@ -291,7 +257,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     try {
       setIsLoading(true);
       const conversation = await apiClient.getConversation(id);
-      console.log("Loaded conversation:", conversation);
 
       setConversationId(conversation.id);
       // Convert messages to the internal format
