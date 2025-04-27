@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { apiClient } from "./api-client";
 import {
   ChatMessage,
   ChatWebSocket,
@@ -23,6 +24,7 @@ type ChatContextType = {
   conversationId: number | null;
   clearMessages: () => void;
   connectionStatus: WebSocketState;
+  loadConversation: (id: number) => Promise<void>;
 };
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -84,6 +86,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   // Handle incoming WebSocket messages
   const handleWebSocketMessage = useCallback(
     (response: StreamResponse) => {
+      console.log("Received WebSocket response:", response);
+
       if (response.status === "error") {
         console.error("WebSocket error:", response.error);
         setIsLoading(false);
@@ -92,16 +96,26 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 
       // Set the conversation ID if we don't have one yet
       if (!conversationId && response.conversation_id) {
+        console.log(`Setting conversation ID to ${response.conversation_id}`);
         setConversationId(response.conversation_id);
       }
 
       if (response.status === "streaming" && response.text) {
+        console.log(
+          `Received streaming text chunk: "${response.text.substring(
+            0,
+            20
+          )}..."`
+        );
         currentResponse.current += response.text;
 
         // Create a new streaming message or update the existing one
         setMessages((prevMessages) => {
           // If we already have a streaming message, update it
           if (streamingMessageId.current) {
+            console.log(
+              `Updating existing streaming message ${streamingMessageId.current}`
+            );
             return prevMessages.map((msg) => {
               if (msg.id === streamingMessageId.current) {
                 return { ...msg, content: currentResponse.current };
@@ -112,6 +126,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
           // Otherwise create a new message
           else {
             const newMessageId = uuidv4();
+            console.log(
+              `Creating new streaming message with ID ${newMessageId}`
+            );
             streamingMessageId.current = newMessageId;
             return [
               ...prevMessages,
@@ -128,6 +145,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       }
       // Handle stream completion
       else if (response.status === "complete") {
+        console.log("Stream completed");
         setIsLoading(false);
         // Reset streaming state
         streamingMessageId.current = null;
@@ -137,35 +155,127 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     [conversationId]
   );
 
+  // Create a conversation if we don't have one
+  const ensureConversation = useCallback(async () => {
+    if (!conversationId) {
+      try {
+        console.log("Creating a new conversation");
+        const conversation = await apiClient.createConversation(
+          "New conversation"
+        );
+        console.log("Created conversation:", conversation);
+        setConversationId(conversation.id);
+        return conversation.id;
+      } catch (error) {
+        console.error("Error creating conversation:", error);
+        throw error;
+      }
+    }
+    return conversationId;
+  }, [conversationId]);
+
   // Send a message to the WebSocket server
   const sendMessage = useCallback(
-    (content: string) => {
+    async (content: string) => {
       if (!content.trim()) return;
 
-      // Add user message to local state
-      const userMessage: ChatMessage = {
-        id: uuidv4(),
-        role: "user",
-        content,
-        conversationId: conversationId || undefined,
-        timestamp: new Date(),
-      };
+      try {
+        setIsLoading(true);
 
-      setMessages((prev) => [...prev, userMessage]);
-      setIsLoading(true);
+        // Ensure we have a conversation ID
+        const activeConversationId = await ensureConversation();
 
-      // Reset streaming state
-      currentResponse.current = "";
-      streamingMessageId.current = null;
+        // Add user message to local state
+        const userMessage: ChatMessage = {
+          id: uuidv4(),
+          role: "user",
+          content,
+          conversationId: activeConversationId,
+          timestamp: new Date(),
+        };
 
-      // Send via WebSocket
-      if (webSocketRef.current) {
-        // The WebSocket class now handles null values correctly
-        webSocketRef.current.sendMessage(content, conversationId);
+        setMessages((prev) => [...prev, userMessage]);
+
+        // Check if this is the first message in the conversation and update the title if it is
+        const shouldUpdateTitle = messages.length === 0;
+
+        // Introduce a small delay before starting AI response to make the loading state visible
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Use RESTful API instead of WebSocket for direct response
+        const response = await apiClient.sendChatMessage(
+          content,
+          activeConversationId
+        );
+        console.log("Chat response:", response);
+
+        // Add AI response to messages
+        if (response && response.ai_response) {
+          const aiMessage: ChatMessage = {
+            id: uuidv4(),
+            role: "assistant",
+            content: response.ai_response.content,
+            conversationId: activeConversationId,
+            timestamp: new Date(response.ai_response.created_at),
+          };
+
+          setMessages((prev) => [...prev, aiMessage]);
+        }
+
+        // Update conversation title if this was the first message
+        if (shouldUpdateTitle) {
+          try {
+            // Create a title from the first user message (truncate if too long)
+            const maxTitleLength = 50;
+            let newTitle = content.trim();
+            if (newTitle.length > maxTitleLength) {
+              newTitle = newTitle.substring(0, maxTitleLength) + "...";
+            }
+
+            console.log(`Updating conversation title to: ${newTitle}`);
+            await apiClient.updateConversationTitle(
+              activeConversationId,
+              newTitle
+            );
+          } catch (error) {
+            console.error("Error updating conversation title:", error);
+          }
+        }
+
+        // Add a slight delay before finishing loading to allow for animations
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error sending message:", error);
+        setIsLoading(false);
       }
     },
-    [conversationId]
+    [conversationId, ensureConversation, messages.length]
   );
+
+  // Load an existing conversation from the API
+  const loadConversation = useCallback(async (id: number) => {
+    try {
+      setIsLoading(true);
+      const conversation = await apiClient.getConversation(id);
+      setConversationId(conversation.id);
+
+      // Convert API messages to ChatMessages
+      const chatMessages: ChatMessage[] = conversation.messages.map((msg) => ({
+        id: uuidv4(), // Generate client-side ID
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        conversationId: msg.conversation_id,
+        timestamp: new Date(msg.created_at),
+      }));
+
+      setMessages(chatMessages);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(`Error loading conversation ${id}:`, error);
+      setIsLoading(false);
+    }
+  }, []);
 
   // Clear all messages
   const clearMessages = useCallback(() => {
@@ -184,6 +294,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         conversationId,
         clearMessages,
         connectionStatus,
+        loadConversation,
       }}
     >
       {children}
