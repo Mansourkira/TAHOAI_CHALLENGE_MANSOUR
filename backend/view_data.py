@@ -7,7 +7,6 @@ import textwrap
 def format_timestamp(timestamp_str):
     """Format timestamp string for display"""
     try:
-        # Try different formats
         formats = [
             "%Y-%m-%dT%H:%M:%S.%f",  # ISO format with microseconds
             "%Y-%m-%dT%H:%M:%S",     # ISO format without microseconds

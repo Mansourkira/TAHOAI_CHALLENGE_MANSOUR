@@ -15,7 +15,7 @@ A full-stack AI chat application with a Next.js frontend and FastAPI backend usi
 
 - Node.js (v16+)
 - Python (v3.9+)
-- GROQ API key (get one from [GROQ.ai](https://console.groq.com/))
+- GROQ API key (optional, you can use the built-in key or get one from [GROQ Console](https://console.groq.com/))
 
 ### Backend Setup
 
@@ -38,35 +38,23 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Set environment variables:
-
-The application uses environment variables for configuration. You can set them in your terminal session before running the application:
+4. Run the application using the interactive script:
 
 ```bash
-# Windows (PowerShell)
-$env:GROQ_API_KEY = "your_groq_api_key_here"
-$env:GROQ_MODEL = "llama3-70b-8192"  # Optional, defaults to llama3-70b-8192
-$env:HOST = "0.0.0.0"  # Optional
-$env:PORT = "8000"  # Optional
-$env:CORS_ORIGINS = "http://localhost:3000"  # Optional
-$env:DATABASE_URL = "sqlite+aiosqlite:///./data/chat.db"  # Optional
-
-# Linux/macOS
-export GROQ_API_KEY="your_groq_api_key_here"
-export GROQ_MODEL="llama3-70b-8192"  # Optional, defaults to llama3-70b-8192
-export HOST="0.0.0.0"  # Optional
-export PORT="8000"  # Optional
-export CORS_ORIGINS="http://localhost:3000"  # Optional
-export DATABASE_URL="sqlite+aiosqlite:///./data/chat.db"  # Optional
+python run.py
 ```
 
-**Note**: Only the `GROQ_API_KEY` is required. All other settings have default values defined in `app/settings.py`.
+This will launch an interactive menu where you can:
 
-5. Run the server:
+- Navigate options using the UP/DOWN arrow keys
+- Select an option by pressing ENTER
 
-```bash
-python start.py
-```
+You'll be presented with two options:
+
+- Use the built-in encrypted API key (for demo/recruiters)
+- Enter your own GROQ API key
+
+The script will handle setting up the environment and starting the backend server.
 
 The backend will be available at [http://localhost:8000](http://localhost:8000).
 
