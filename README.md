@@ -38,21 +38,29 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file:
+4. Set environment variables:
+
+The application uses environment variables for configuration. You can set them in your terminal session before running the application:
 
 ```bash
-# Database settings
-DATABASE_URL=sqlite+aiosqlite:///./data/chat.db
+# Windows (PowerShell)
+$env:GROQ_API_KEY = "your_groq_api_key_here"
+$env:GROQ_MODEL = "llama3-70b-8192"  # Optional, defaults to llama3-70b-8192
+$env:HOST = "0.0.0.0"  # Optional
+$env:PORT = "8000"  # Optional
+$env:CORS_ORIGINS = "http://localhost:3000"  # Optional
+$env:DATABASE_URL = "sqlite+aiosqlite:///./data/chat.db"  # Optional
 
-# GROQ API settings
-GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama3-70b-8192
-
-# Server settings
-HOST=0.0.0.0
-PORT=8000
-CORS_ORIGINS=http://localhost:3000
+# Linux/macOS
+export GROQ_API_KEY="your_groq_api_key_here"
+export GROQ_MODEL="llama3-70b-8192"  # Optional, defaults to llama3-70b-8192
+export HOST="0.0.0.0"  # Optional
+export PORT="8000"  # Optional
+export CORS_ORIGINS="http://localhost:3000"  # Optional
+export DATABASE_URL="sqlite+aiosqlite:///./data/chat.db"  # Optional
 ```
+
+**Note**: Only the `GROQ_API_KEY` is required. All other settings have default values defined in `app/settings.py`.
 
 5. Run the server:
 
@@ -145,7 +153,10 @@ For the backend, you have several options:
 
    - Push your code to GitHub
    - Create a new project in Railway from your GitHub repo
-   - Set the required environment variables
+   - Set the required environment variables:
+     - `GROQ_API_KEY`: Your GROQ API key (required)
+     - `GROQ_MODEL`: LLM model to use (optional)
+     - `HOST`, `PORT`, `CORS_ORIGINS`, `DATABASE_URL` (optional)
 
 2. **Render**:
 
@@ -153,14 +164,18 @@ For the backend, you have several options:
    - Connect your GitHub repository
    - Set the build command to `pip install -r requirements.txt`
    - Set the start command to `python start.py`
-   - Add the environment variables from the `.env` file
+   - Add the required environment variables in the Render dashboard:
+     - `GROQ_API_KEY`: Your GROQ API key (required)
+     - Additional optional variables as needed
 
 3. **Heroku**:
    - Create a `Procfile` with `web: uvicorn main:app --host=0.0.0.0 --port=${PORT}`
    - Deploy using the Heroku CLI or GitHub integration
-   - Configure environment variables in the Heroku dashboard
+   - Configure environment variables in the Heroku dashboard:
+     - `GROQ_API_KEY`: Your GROQ API key (required)
+     - Other settings as needed
 
-Remember to update the CORS settings in your backend to allow requests from your Vercel frontend domain.
+Remember to update the `CORS_ORIGINS` setting in your deployment to allow requests from your Vercel frontend domain.
 
 ## API Documentation
 
