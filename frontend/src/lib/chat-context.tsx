@@ -113,14 +113,16 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       }
 
       if (response.status === "streaming") {
-        if (response.text !== undefined) {
+        // Ensure text is defined and properly handled
+        const textChunk = response.text !== undefined ? response.text : "";
+
+        if (textChunk || textChunk === "") {
           console.log(
-            `Received streaming text chunk: "${response.text.substring(
-              0,
-              20
-            )}..."`
+            `Received streaming text chunk: "${textChunk.substring(0, 20)}..."`
           );
-          currentResponse.current += response.text;
+
+          // Add the chunk to the current response
+          currentResponse.current += textChunk;
 
           // Create a new streaming message or update the existing one
           setMessages((prevMessages) => {
@@ -140,7 +142,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
             else {
               const newMessageId = uuidv4();
               console.log(
-                `Creating new streaming message with ID ${newMessageId}`
+                `Creating new streaming message with ID ${newMessageId}`,
+                `Initial content: "${currentResponse.current.substring(
+                  0,
+                  20
+                )}..."`
               );
               streamingMessageId.current = newMessageId;
               return [
@@ -160,6 +166,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       // Handle stream completion
       else if (response.status === "complete") {
         console.log("Stream completed");
+        console.log(
+          `Final response content: "${currentResponse.current.substring(
+            0,
+            50
+          )}..."`
+        );
         setIsLoading(false);
         // Reset streaming state
         streamingMessageId.current = null;
