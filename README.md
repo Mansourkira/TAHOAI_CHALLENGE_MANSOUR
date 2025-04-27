@@ -54,35 +54,35 @@ You have two options for running the backend:
 #### Option 1: Using the built-in API key (Recommended)
 
 ```bash
-python run.py
+python start.py
 ```
 
 This script will automatically:
 
-- Handle secure API key decryption from an encrypted file
+- Attempt to decrypt and use the secure built-in API key from an encrypted file
+- Fall back to environment variable if decryption fails or the key file is missing
 - Set up the environment variables
-- Check for required dependencies
 - Start the backend server
 
-#### Option 2: Using your own GROQ API key
+#### Option 2: Using your own GROQ API key (Alternative)
 
-If you prefer to use your own API key, use the `start.py` script:
+If you prefer to use your own API key, use the `run.py` script:
 
 ```bash
 # For Windows Command Prompt
 set GROQ_API_KEY=your_api_key_here
-python start.py
+python run.py
 
 # For Windows PowerShell
 $env:GROQ_API_KEY="your_api_key_here"
-python start.py
+python run.py
 
 # For Linux/Mac
 export GROQ_API_KEY=your_api_key_here
-python start.py
+python run.py
 ```
 
-Note: `start.py` will first attempt to use the encrypted API key, but will fall back to the environment variable if decryption fails or the key file is missing.
+Note: `run.py` will explicitly use your provided API key and handle dependency checking, environment setup, and server startup.
 
 The backend will be available at [http://localhost:8000](http://localhost:8000).
 
